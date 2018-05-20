@@ -97,16 +97,16 @@ Define pins and Output Data Registers
 */
 
 //Port data |D7 |D6 |D5 |D4 |D3 |D2 |D1 |D0 |
-//Pin stm32 |PA7|PA6|PA5|PA4|PA3|PA2|PC1|PA0|
+//Pin stm32 |PB15|PB14|PB13|PB12|PB11|PB10|PB9|PB8|
 //Control pins |RD |WR |RS |CS |RST|
-//Pin stm32    |PB4|PB5|PB6|PB7|PB8|
-#define TFT_CNTRL      GPIOB
-#define TFT_DATA       GPIOA
-#define TFT_RD         PB4
-#define TFT_WR         PB5
-#define TFT_RS         PB6
-#define TFT_CS         PB7
-#define TFT_RST        PB8
+//Pin stm32    |PA0|PA1|PA2|PA3|PA8|
+#define TFT_CNTRL      GPIOA
+#define TFT_DATA       GPIOB
+#define TFT_RD         PA0
+#define TFT_WR         PA1
+#define TFT_RS         PA2
+#define TFT_CS         PA3
+#define TFT_RST        PA8
 #define TFT_RD_MASK    digitalPinToBitMask(TFT_RD)
 #define TFT_WR_MASK    digitalPinToBitMask(TFT_WR)
 #define TFT_RS_MASK    digitalPinToBitMask(TFT_RS)
@@ -128,7 +128,8 @@ Define pins and Output Data Registers
 #define swap(a, b) { int16_t t = a; a = b; b = t; }
 
 //Set pins to the 8 bit number
-#define write8special(c) { TFT_DATA->regs->BSRR = ((~c)<<16) | (c); WR_STROBE; }
+//#define write8special(c) { TFT_DATA->regs->BSRR = ((~c)<<16) | (c); WR_STROBE; }
+#define write8special(c) { TFT_DATA->regs->BSRR = ((~c)<<24) | ((c)<<8); WR_STROBE; }
 
 
 class Adafruit_ILI9341_8bit_STM : public Adafruit_GFX {
@@ -136,7 +137,7 @@ class Adafruit_ILI9341_8bit_STM : public Adafruit_GFX {
  public:
 
   Adafruit_ILI9341_8bit_STM(void);
-  
+
   void     begin(void),
            setAddrWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1),
            pushColor(uint16_t color),
@@ -155,7 +156,7 @@ class Adafruit_ILI9341_8bit_STM : public Adafruit_GFX {
 
   /* These are not for current use, 8-bit protocol only! */
   //uint8_t  readdata(void),
-   uint8_t readcommand8(uint8_t reg); 
+   uint8_t readcommand8(uint8_t reg);
    uint32_t readID(void);
 
 

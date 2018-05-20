@@ -3,9 +3,12 @@ https://github.com/stevstrong/Adafruit_TFTLCD_8bit_STM32
 # Adafruit_ILI9341_8bit_STM for STM32duino
 8 bit parallel library for ILI9341 and STM32F1
 
+With changes from [this instructable](http://www.instructables.com/id/Fast-Portable-and-Affordable-Oscilloscope-and-Indu/).
+
 ### Working Example List
 
  - graphicstest.ino
+ - lcd_touch_paint.ino
  
 ### Demo (YouTube)
 

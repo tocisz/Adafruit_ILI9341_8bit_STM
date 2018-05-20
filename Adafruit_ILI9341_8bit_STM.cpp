@@ -14,19 +14,25 @@ Includes DMA transfers on DMA1 CH2 and CH3.
 // Constructor when using 8080 mode of control.
 Adafruit_ILI9341_8bit_STM::Adafruit_ILI9341_8bit_STM(void)
 : Adafruit_GFX(ILI9341_TFTWIDTH, ILI9341_TFTHEIGHT) {
-  
-  //Set PB4 - PB7 as output
-  //Note: CRH and CRL are both 32 bits wide
-  //Each pin is represented by 4 bits 0x3 (hex) sets that pin to O/P
-  TFT_CNTRL->regs->CRL = (TFT_CNTRL->regs->CRL & 0x0000FFFF) | 0x33330000;
+/* ------- Explanation:
+ *The registers for a port's GPIO setup are CRH (pins 8-15) and CRL (pins 0-7),both 32 bits wide
+ *Each pin is represented by 4 bits:
+    *0x3 (hex) or 0b0011(bin) sets that pin to output at fastest speed (50Mhz switching)
+    *0x0 will set a pin to analog input
+
+ *The bitwise and opeation "TFT_CNTRL->regs->CRL = (TFT_CNTRL->regs->CRL & 0xFFFF0000)" clears the first 4 pins (for CRL it's 0-3), since 1&0=0
+ *It also leaves the other pins unchanged: if they have ones (1), 1&1 =1; if they don't, 0&1=0.
+ *The OR operation"| 0x00003333" will set first 4 pins to  output, while keeping others intact, since 1|0=1, 0|0=0.
+*/
+  TFT_CNTRL->regs->CRL = (TFT_CNTRL->regs->CRL & 0xFFFF0000) | 0x00003333;
     CS_IDLE; // Set all control bits to HIGH (idle)
     CD_DATA; // Signals are ACTIVE LOW
     WR_IDLE;
     RD_IDLE;
   if(TFT_RST) {
     //pinMode(TFT_RST, OUTPUT);
-    //Set PB8 as output
-    TFT_CNTRL->regs->CRH = (TFT_CNTRL->regs->CRH & 0xFFFFFFF0) | 0x00000003; 
+    //Set PA8 as output
+    TFT_CNTRL->regs->CRH = (TFT_CNTRL->regs->CRH & 0xFFFFFFF0) | 0x00000003;
     digitalWrite(TFT_RST, HIGH);
   }
   //set up 8 bit parallel port to write mode.
@@ -36,14 +42,15 @@ Adafruit_ILI9341_8bit_STM::Adafruit_ILI9341_8bit_STM(void)
 void Adafruit_ILI9341_8bit_STM::setWriteDataBus(void) {
   // set the pins to output mode
   // not required to mask and assign, because all pins of bus are set together
-  TFT_DATA->regs->CRL = 0x33333333;
+  //CRL addresses the first 8 GPIO pins(0-7) of the bus, while CRH refers to the last 8 (8-15)
+  TFT_DATA->regs->CRH = 0x33333333; // this sets all pins as outputs
   //each pin is configured by four bits, and 0b0011 or 0x3 means output mode (same as pinmode())
 }
 
 void Adafruit_ILI9341_8bit_STM::setReadDataBus(void) {
   //set the pins to input mode
   // not required to mask and assign, because all pins of bus are set together
-  TFT_DATA->regs->CRL = 0x88888888;
+  TFT_DATA->regs->CRH = 0x88888888;
   //8 in hex is 0b1000, which means input, same as pinmode()
   // for (uint8_t i = 0; i <= 7; i++){
   //   pinMode(DPINS[i], INPUT);
@@ -54,10 +61,13 @@ void Adafruit_ILI9341_8bit_STM::write8(uint8_t c) {
 
   //retain values of A8-A15, and update A0-A7
   CS_ACTIVE;
-  //BRR or BSRR avoid read, mask write cycle time
+  //BRR or BSRR avoid read, mask, write cycle time
   //BSRR is 32 bits wide. 1's in the most significant 16 bits signify pins to reset (clear)
   // 1's in least significant 16 bits signify pins to set high. 0's mean 'do nothing'
-  TFT_DATA->regs->BSRR = ((~c)<<16) | (c); //Set pins to the 8 bit number
+
+  // was this: TFT_DATA->regs->BSRR = ((~c)<<16) | (c); //Set pins to the 8 bit number
+  TFT_DATA->regs->BSRR = ((~c)<<24) | ((c)<<8); //Set pins to the 8 bit number
+
   //TFT_DATA->regs->ODR = ((TFT_DATA->regs->ODR & 0xFF00) | ((c) & 0x00FF));//FF00 is Binary 1111111100000000
   WR_STROBE;
   CS_IDLE;
@@ -122,7 +132,7 @@ void Adafruit_ILI9341_8bit_STM::begin(void) {
     digitalWrite(TFT_RST, HIGH);
     delay(150);
   }
-  
+
 
   writecommand(0xEF);
   writedata(0x03);
@@ -237,7 +247,7 @@ void Adafruit_ILI9341_8bit_STM::begin(void) {
 
 
 void Adafruit_ILI9341_8bit_STM::setAddrWindow(uint16_t x0, uint16_t y0, uint16_t x1,
-                                        uint16_t y1) {								
+                                        uint16_t y1) {
   CS_ACTIVE;
   CD_COMMAND;
   write8special(ILI9341_CASET); // Column addr set
@@ -307,7 +317,7 @@ void Adafruit_ILI9341_8bit_STM::drawFastVLine(int16_t x, int16_t y, int16_t h,
 void Adafruit_ILI9341_8bit_STM::drawFastHLine(int16_t x, int16_t y, int16_t w,
                                         uint16_t color) {
 
-  
+
   // Rudimentary clipping
   if ((x >= _width) || (y >= _height || w < 1)) return;
   if ((x + w - 1) >= _width)  w = _width - x;
@@ -344,7 +354,7 @@ void Adafruit_ILI9341_8bit_STM::fillRect(int16_t x, int16_t y, int16_t w, int16_
     drawPixel(x, y, color);
     return;
   }
-  
+
   setAddrWindow(x, y, x + w - 1, y + h - 1);
 
   CD_DATA;

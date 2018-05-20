@@ -1,35 +1,22 @@
 #include <Adafruit_GFX.h>
 #include <gfxfont.h>
 
-/***************************************************
-  This is our GFX example for the Adafruit ILI9341 Breakout and Shield
-  ----> http://www.adafruit.com/products/1651
-
-  Check out the links above for our tutorials and wiring diagrams
-  These displays use SPI to communicate, 4 or 5 pins are required to
-  interface (RST is optional)
-  Adafruit invests time and resources providing this open source code,
-  please support Adafruit and open-source hardware by purchasing
-  products from Adafruit!
-
-  Written by Limor Fried/Ladyada for Adafruit Industries.
-  MIT license, all text above must be included in any redistribution
- ****************************************************/
-
-
-
 #include "Adafruit_ILI9341_8bit_STM.h"
 
-// Use hardware SPI (on Uno, #13, #12, #11) and the above for CS/DC
 Adafruit_ILI9341_8bit_STM tft = Adafruit_ILI9341_8bit_STM();
-// If using the breakout, change pins as desired
-//Adafruit_ILI9341_8bit_STM tft = Adafruit_ILI9341_8bit_STM(TFT_CS, TFT_DC, TFT_MOSI, TFT_CLK, TFT_RST, TFT_MISO);
+
+// These are the examples for the patched version of the libray, which allows touch use and frees more "useful" -like SPI- pins of the STM32
+//Port data |D7 |D6 |D5 |D4 |D3 |D2 |D1 |D0 |
+//Pin stm32 |PB15|PB14|PB13|PB12|PB11|PB10|PB9|PB8|
+//Control pins |RD |WR |RS |CS |RST|
+//Pin stm32    |PA4|PA5|PA6|PA7|PA8|
+
 
 void setup() {
   Serial.begin(115200);
-  Serial.println("ILI9341 Test!"); 
-  
- 
+  Serial.println("ILI9341 Test!");
+
+
   tft.begin();
 
   // read diagnostics (optional but can help debug problems)
@@ -42,10 +29,10 @@ void setup() {
   x = tft.readcommand8(ILI9341_RDIMGFMT);
   Serial.print("Image Format: 0x"); Serial.println(x, HEX);
   x = tft.readcommand8(ILI9341_RDSELFDIAG);
-  Serial.print("Self Diagnostic: 0x"); Serial.println(x, HEX); 
+  Serial.print("Self Diagnostic: 0x"); Serial.println(x, HEX);
   x = tft.readID();
   Serial.print("Device ID: 0x"); Serial.println(x, HEX);
-  
+
   Serial.println(F("Benchmark                Time (microseconds)"));
 
   Serial.print(F("Screen fill              "));
