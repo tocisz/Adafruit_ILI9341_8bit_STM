@@ -33,12 +33,12 @@ Rounded rects (filled)   709046
 
 ### How to use
 #### 8 bit parallel interface
-Port data |D7 |D6 |D5 |D4 |D3 |D2 |D1 |D0 |
-Pin stm32 |PB15|PB14|PB13|PB12|PB11|PB10|PB9|PB8|
+|Port data |D7 |D6 |D5 |D4 |D3 |D2 |D1 |D0 |
+|Pin stm32 |PB15|PB14|PB13|PB12|PB11|PB10|PB9|PB8|
 
 #### Control Pins
-Control pins |RD |WR |RS |CS |RST|
-Pin stm32    |PA0|PA1|PA2|PA3|PA8|
+|Control pins |RD |WR |RS |CS |RST|
+|Pin stm32    |PA0|PA1|PA2|PA3|PA8|
 
 #### Changing Pins
 If you want to change control pins, they can be modified in Adafruit_ILI9341_8bit_STM.h header file. You will also have to modify the setting of these pins as output in Adafruit_ILI9341_8bit_STM.cpp, lines 18-22.
